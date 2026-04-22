@@ -26,23 +26,15 @@ NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 GNEWS_API_KEY = os.getenv("GNEWS_API_KEY")
 GNEWS_API_KEY_2 = os.getenv("GNEWS_API_KEY_2")
 
-# 1. OpenAI Pool (3 Keys)
-OPENAI_API_KEYS = [
-    os.getenv("OPENAI_KEY_1"),
-    os.getenv("OPENAI_KEY_2"),
-    os.getenv("OPENAI_KEY_3")
-]
-OPENAI_API_KEYS = [k for k in OPENAI_API_KEYS if k]
+# 1. OpenAI Pool — dynamically loads OPENAI_KEY_1 through OPENAI_KEY_20
+OPENAI_API_KEYS = [v for i in range(1, 21) if (v := os.getenv(f"OPENAI_KEY_{i}"))]
 OPENAI_API_KEY = OPENAI_API_KEYS[0] if OPENAI_API_KEYS else None
 
-# 2. Groq Pool (3 Keys)
-GROQ_API_KEYS = [
-    os.getenv("GROQ_KEY_1"),
-    os.getenv("GROQ_KEY_2"),
-    os.getenv("GROQ_KEY_3")
-]
-GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]
+# 2. Groq Pool — dynamically loads GROQ_KEY_1 through GROQ_KEY_20
+GROQ_API_KEYS = [v for i in range(1, 21) if (v := os.getenv(f"GROQ_KEY_{i}"))]
 GROQ_API_KEY = GROQ_API_KEYS[0] if GROQ_API_KEYS else None
+
+print(f"[BOOT] 🔑 Key Pool: {len(OPENAI_API_KEYS)} OpenAI + {len(GROQ_API_KEYS)} Groq = {len(OPENAI_API_KEYS)+len(GROQ_API_KEYS)} total keys loaded")
 
 # Specialized Fallbacks (Maintained for legacy compatibility but effectively mapped to pools)
 GROQ_KEY_TELUGU = GROQ_API_KEY

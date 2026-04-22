@@ -1,0 +1,155 @@
+[33mcommit 1f9c15a7cb639c2e6999d4d4dc5e7750ddde836f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 20:37:58 2026 +0530
+
+    Final Production Perfected: Fixed 15min cycle visibility and completed strict line-by-line audit
+
+[33mcommit 012e273e9ffe89d8cfd22adcd4c4bf3880590342[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 20:35:01 2026 +0530
+
+    Resilience: Un-stuck the 15-minute cycle by bypassing HF timeout and silencing GNews quota errors
+
+[33mcommit a7669b6fb34641ce3c631455ebf339baed5d22d8[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 20:29:38 2026 +0530
+
+    Fix: Add missing SystemConfig import in health endpoint
+
+[33mcommit def58f8b4c1424a51735673b371e6810f44a4033[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 20:25:22 2026 +0530
+
+    Final Production Audit: Enforced global translation coverage, persistent audio storage, and SQLite WAL mode stability
+
+[33mcommit c0a9292490994b7583acd09331d3d568c3323537[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 20:17:44 2026 +0530
+
+    Resilience: Added Jaccard similarity fallback for deduplication to handle Hugging Face timeouts
+
+[33mcommit 96f901f70865aac2f7f902e52fca6f39fdb63cb1[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 20:10:54 2026 +0530
+
+    Final Stability: Fixed all empty sections using live-fallback and added update-cycle persistence
+
+[33mcommit 278ad396ae9899ef0474c64154fef3a6f55569dd[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 20:01:39 2026 +0530
+
+    Optimization: Strengthen SQLite resilience and startup news fetching for Railway deployment
+
+[33mcommit 9bf7208962d35c8220d04f283111a61a8093e88d[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 19:58:22 2026 +0530
+
+    Critical Fix: Resolved name 'app' is not defined crash in main.py
+
+[33mcommit 594b5bfe38cf428041cc4ea528d94b9680cb3b89[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 19:54:15 2026 +0530
+
+    Stability: Add system health monitoring and fix 15-minute update cycle scheduler
+
+[33mcommit f5921287e5abcc9b82a48e0ee996eae6eddde68f[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 19:43:07 2026 +0530
+
+    Final critical stability fixes: Restore Exam/Search routes, fix translation variable bug, and dynamic intelligence fallbacks
+
+[33mcommit 65b8b4e9a85e039167e02bfa55788f768e6267c7[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 19:06:27 2026 +0530
+
+    Fix Personal AI News JSON error on filtering
+
+[33mcommit 6a765736f55353c861fbf0c4891aa8d8b8200c96[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 19:00:16 2026 +0530
+
+    Ultimate Firebase config healing for Railway environment variables
+
+[33mcommit dcca2d3a8084a6916536781f46fa09129b584dc2[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 18:57:07 2026 +0530
+
+    Harden Student news section against possible null impact scores and missing SystemConfig table
+
+[33mcommit 3e535edff67faf02584562c1773c4ea751ab3157[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 18:51:25 2026 +0530
+
+    Fix repetitive intelligence strings and enable real AI re-analysis on update
+
+[33mcommit 0132356ec681b3b8c268956cecc101e5d6eacf05[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 18:39:47 2026 +0530
+
+    fix: correct JSON and PEM formatting in firebase initialization sequence
+
+[33mcommit 63d5501296bf9dbaf48b5b4561fb105b7b7e5ce4[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 18:31:59 2026 +0530
+
+    fix: add auto-healing to firebase json initialization to handle over-escaped strings
+
+[33mcommit 8e5e7c96f4c1ecc14066747feb88b2208b483cc8[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 18:18:24 2026 +0530
+
+    fix: implement robust firebase initialization with JSON string and key cleaning support
+
+[33mcommit 244d52d015fe81c9e5b0e79ca71e4caa7d4beaf4[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:58:29 2026 +0530
+
+    fix: resolve path duplication in sqlite url when relative path contains prefixes
+
+[33mcommit 1c9503ee59bc542cad2b941b1999b85a5094e458[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:53:35 2026 +0530
+
+    fix: enforce absolute posix paths for sqlite and add startup debug logs
+
+[33mcommit 077398251b454ae3bca1f43d5506196e9a9904e2[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:48:22 2026 +0530
+
+    fix: resolve sqlite connection error by enforcing absolute paths
+
+[33mcommit d6e7b3b460648ac796cf6b1a88f4d0f46cb1ac6a[m[33m ([m[1;31mhf/main[m[33m, [m[1;31mhf/HEAD[m[33m)[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:31:46 2026 +0530
+
+    fix: restore '==' for torch with local version label (+cpu)
+
+[33mcommit 21631d28dbed3ae91f9efad301fe19a7c241ce62[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:29:10 2026 +0530
+
+    fix: loosen all version pins to >= to resolve hallucinated/impossible versions
+
+[33mcommit 2075032ebab8b90f228b570121a1794b0ee8cc97[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:24:29 2026 +0530
+
+    fix: downgrade typer to 0.12.3 to resolve click conflict with gTTS
+
+[33mcommit 6d4359f00e71b702ca4faee9969806b233f6448b[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:20:38 2026 +0530
+
+    fix: remove conflicting packages library to resolve click version conflict
+
+[33mcommit a17233bed62659bde6585206c035b4aa2a4bbb2c[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:17:14 2026 +0530
+
+    fix: bump click to 8.1.7 to resolve compatibility with Flask 3.1.3
+
+[33mcommit 65ee74ef5148c56ad80c91932273cac0a24c9547[m
+Author: Chaparapu Ashok Reddy <chaparapuashokreddy581@gmail.com>
+Date:   Tue Apr 14 17:13:36 2026 +0530
+
+    fix: add index-url for torch cpu wheels in Dockerfile

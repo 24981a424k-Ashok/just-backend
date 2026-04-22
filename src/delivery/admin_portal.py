@@ -249,3 +249,168 @@ async def update_admin_config(payload: Dict[str, str], db: Session = Depends(get
     db.commit()
     log_protocol_action(db, 'config_update', 'system', None, f"Updated System Parameters: {list(payload.keys())}")
     return {"status": "updated"}
+
+
+# --- Article UPDATE ---
+class ArticleUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    country: Optional[str] = None
+    impact_score: Optional[int] = None
+    summary_bullets: Optional[List[str]] = None
+
+@router.put("/articles/{article_id}")
+async def update_admin_article(article_id: int, data: ArticleUpdate, db: Session = Depends(get_db), auth: bool = Depends(verify_admin)):
+    art = db.query(VerifiedNews).filter(VerifiedNews.id == article_id).first()
+    if not art:
+        raise HTTPException(status_code=404, detail="Article not found")
+    if data.title is not None: art.title = data.title
+    if data.content is not None: art.content = data.content
+    if data.category is not None: art.category = data.category
+    if data.country is not None: art.country = data.country
+    if data.impact_score is not None: art.impact_score = data.impact_score
+    if data.summary_bullets is not None: art.summary_bullets = data.summary_bullets
+    db.commit()
+    db.refresh(art)
+    log_protocol_action(db, 'update', 'article', str(article_id), f"Updated: {art.title}")
+    return {"status": "updated", "id": art.id}
+
+
+# --- Ad UPDATE ---
+class AdUpdate(BaseModel):
+    image_url: Optional[str] = None
+    caption: Optional[str] = None
+    position: Optional[str] = None
+    target_node: Optional[str] = None
+    target_url: Optional[str] = None
+    target_platform: Optional[str] = None
+    is_active: Optional[bool] = None
+
+@router.put("/ads/{ad_id}")
+async def update_admin_ad(ad_id: int, data: AdUpdate, db: Session = Depends(get_db), auth: bool = Depends(verify_admin)):
+    ad = db.query(Advertisement).filter(Advertisement.id == ad_id).first()
+    if not ad:
+        raise HTTPException(status_code=404, detail="Ad not found")
+    if data.image_url is not None: ad.image_url = data.image_url
+    if data.caption is not None: ad.caption = data.caption
+    if data.position is not None: ad.position = data.position
+    if data.target_node is not None: ad.target_node = data.target_node
+    if data.target_url is not None: ad.target_url = data.target_url
+    if data.target_platform is not None: ad.target_platform = data.target_platform
+    db.commit()
+    db.refresh(ad)
+    log_protocol_action(db, 'update', 'ad', str(ad_id), f"Updated campaign: {ad.caption}")
+    return {"status": "updated", "id": ad.id}
+
+
+# --- Newspaper CREATE + UPDATE ---
+class NewspaperCreate(BaseModel):
+    name: str
+    url: str
+    country: Optional[str] = "Global"
+    logo_text: Optional[str] = None
+    logo_color: Optional[str] = "#4285f4"
+    category: Optional[str] = "General"
+
+class NewspaperUpdate(BaseModel):
+    name: Optional[str] = None
+    url: Optional[str] = None
+    country: Optional[str] = None
+    logo_text: Optional[str] = None
+    logo_color: Optional[str] = None
+    category: Optional[str] = None
+
+@router.post("/newspapers")
+async def create_admin_newspaper(data: NewspaperCreate, db: Session = Depends(get_db), auth: bool = Depends(verify_admin)):
+    paper = Newspaper(
+        name=data.name,
+        url=data.url,
+        country=data.country,
+        logo_text=data.logo_text or data.name[:3].upper(),
+        logo_color=data.logo_color,
+        category=data.category
+    )
+    db.add(paper)
+    db.commit()
+    db.refresh(paper)
+    log_protocol_action(db, 'create', 'newspaper', str(paper.id), f"Registered source: {data.name}")
+    return {"status": "created", "id": paper.id}
+
+@router.put("/newspapers/{source_id}")
+async def update_admin_newspaper(source_id: int, data: NewspaperUpdate, db: Session = Depends(get_db), auth: bool = Depends(verify_admin)):
+    paper = db.query(Newspaper).filter(Newspaper.id == source_id).first()
+    if not paper:
+        raise HTTPException(status_code=404, detail="Newspaper not found")
+    if data.name is not None: paper.name = data.name
+    if data.url is not None: paper.url = data.url
+    if data.country is not None: paper.country = data.country
+    if data.logo_text is not None: paper.logo_text = data.logo_text
+    if data.logo_color is not None: paper.logo_color = data.logo_color
+    if data.category is not None: paper.category = data.category
+    db.commit()
+    db.refresh(paper)
+    log_protocol_action(db, 'update', 'newspaper', str(source_id), f"Updated source: {paper.name}")
+    return {"status": "updated", "id": paper.id}
+
+
+# --- Pipeline Control ---
+@router.post("/trigger-ingest")
+async def trigger_news_ingest(db: Session = Depends(get_db), auth: bool = Depends(verify_admin)):
+    """Manually trigger a full news ingestion cycle."""
+    try:
+        from src.scheduler.task_scheduler import run_news_cycle
+        import threading
+        def run_ingest():
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(run_news_cycle())
+                loop.close()
+                # Record completion time
+                from src.database.models import SessionLocal as SL, SystemConfig as SC
+                db2 = SL()
+                cfg = db2.query(SC).filter(SC.config_key == "last_manual_ingest").first()
+                if cfg:
+                    cfg.config_value = datetime.utcnow().isoformat()
+                else:
+                    db2.add(SC(config_key="last_manual_ingest", config_value=datetime.utcnow().isoformat()))
+                db2.commit()
+                db2.close()
+            except Exception as e:
+                logger.error(f"Manual Ingest Failed: {e}")
+        threading.Thread(target=run_ingest, daemon=True).start()
+        log_protocol_action(db, 'trigger_ingest', 'pipeline', None, "Manual news ingestion triggered")
+        return {"status": "initiated", "message": "News ingestion cycle started in background."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/clear-cache")
+async def clear_translation_cache(db: Session = Depends(get_db), auth: bool = Depends(verify_admin)):
+    """Clear all translation caches from the database."""
+    try:
+        articles = db.query(VerifiedNews).filter(VerifiedNews.translation_cache != None).all()
+        count = len(articles)
+        for art in articles:
+            art.translation_cache = None
+        db.commit()
+        log_protocol_action(db, 'clear_cache', 'pipeline', None, f"Cleared translation cache for {count} articles")
+        return {"status": "cleared", "articles_cleared": count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/keypool-status")
+async def get_keypool_status(auth: bool = Depends(verify_admin)):
+    """Return the status of all API keys in the rotation pool."""
+    from src.config.settings import OPENAI_API_KEYS, GROQ_API_KEYS
+    def mask_key(k):
+        return k[:8] + "..." + k[-4:] if k and len(k) > 12 else "invalid"
+    
+    openai_keys = [{"index": i+1, "key": mask_key(k), "type": "OpenAI", "status": "active"} for i, k in enumerate(OPENAI_API_KEYS)]
+    groq_keys = [{"index": i+1, "key": mask_key(k), "type": "Groq", "status": "active"} for i, k in enumerate(GROQ_API_KEYS)]
+    
+    return {
+        "total": len(openai_keys) + len(groq_keys),
+        "openai": {"count": len(openai_keys), "keys": openai_keys},
+        "groq": {"count": len(groq_keys), "keys": groq_keys}
+    }
