@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Retention"], prefix="/api/v2/retention")
 router_legacy = APIRouter(tags=["Retention Legacy"], prefix="/api/retention")
+router_user = APIRouter(tags=["User"], prefix="/api/user")
 
 def get_db():
     db = SessionLocal()
@@ -345,3 +346,59 @@ async def track_topic(payload: TrackTopicRequest, db: Session = Depends(get_db))
         )
 
     return {"status": "success", "message": "Topic tracked for 30 days"}
+
+# --- USER COMPATIBILITY ROUTES ---
+
+@router_user.get("/read-history")
+async def get_history_compat(uid: str, db: Session = Depends(get_db)):
+    """Frontend expects /api/user/read-history?uid=..."""
+    user = db.query(User).filter(User.firebase_uid == uid).first()
+    if not user:
+        return {"status": "success", "history": []}
+    
+    history = db.query(ReadHistory).filter(ReadHistory.user_id == user.id).order_by(ReadHistory.read_at.desc()).limit(50).all()
+    result = []
+    for h in history:
+        news = h.news
+        if not news: continue
+        result.append({
+            "id": news.id,
+            "title": news.title,
+            "source": news.raw_news.source_name if news.raw_news else "Unknown",
+            "read_at": h.read_at.isoformat(),
+            "url": news.raw_news.url if news.raw_news else "#"
+        })
+    return {"status": "success", "history": result}
+
+@router_user.get("/saved-articles")
+async def get_saved_articles_compat(uid: str, db: Session = Depends(get_db)):
+    """Frontend expects /api/user/saved-articles?uid=..."""
+    return await _fetch_saves(uid, db)
+
+@router.get("/streak_dashboard")
+async def get_streak_dashboard(firebase_uid: str, db: Session = Depends(get_db)):
+    """Detailed streak data for the dashboard UI."""
+    user = db.query(User).filter(User.firebase_uid == firebase_uid).first()
+    if not user:
+        return {"status": "error", "message": "User not found"}
+        
+    # Rules & Milestones
+    rules = [
+        "Read at least 1 verified article daily to maintain your streak.",
+        "Streaks are calculated in UTC time.",
+        "Unlock badges at 7, 30, and 100 days of consistency.",
+        "Tracked topics count towards your daily activity."
+    ]
+    
+    # Activity map for calendar
+    history = db.query(ReadHistory).filter(ReadHistory.user_id == user.id).all()
+    activity_map = {h.read_at.date().isoformat(): True for h in history}
+    
+    return {
+        "status": "success",
+        "current_streak": user.current_streak,
+        "best_streak": getattr(user, 'best_streak', user.current_streak),
+        "rules": rules,
+        "activity": activity_map,
+        "last_active": user.last_active_date.isoformat() if user.last_active_date else None
+    }

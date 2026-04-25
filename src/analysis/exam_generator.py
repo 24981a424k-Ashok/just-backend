@@ -27,7 +27,7 @@ class ExamGenerator:
         return [n.to_dict() for n in news]
 
 
-    def generate_mock_test(self, db: Session) -> Dict:
+    async def generate_from_news(self, db: Session) -> Dict:
         """Generate a high-accuracy mock test from the last 24 hours of intelligence."""
         news_items = self.get_recent_news(db)
         
@@ -43,7 +43,11 @@ class ExamGenerator:
             news_items = [n.to_dict() for n in news]
 
         if not news_items:
-            return {"error": "Intelligence scan found no fresh news. Please run a news cycle first."}
+            return {
+                "title": "System Initializing",
+                "questions": [],
+                "error": "Intelligence scan found no fresh news. Please run a news cycle first."
+            }
 
         # Perfection: Ensure diverse category representation
         categorized_news = defaultdict(list)
@@ -107,17 +111,20 @@ class ExamGenerator:
         """
         
         try:
+            # We use asyncio to run the LLM completion if it's blocking, but usually analyzers have their own async methods if needed.
+            # For now, we'll keep it simple as the web dashboard calls it with await.
             response = self.llm.get_completion(prompt)
             # Clean JSON if needed
             response = response.replace("```json", "").replace("```", "").strip()
-            return json.loads(response)
+            data = json.loads(response)
+            if "questions" not in data:
+                data["questions"] = []
+            return data
         except Exception as e:
             logging.error(f"Exam Generation Error: {e}")
-            print(f"Exam Generation Error (LLM/Quota): {e}")
             
             # Fallback: Load from question bank
             try:
-                # Robust path handling
                 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 bank_path = os.path.join(base_dir, 'data', 'question_bank.json')
                 
@@ -125,10 +132,7 @@ class ExamGenerator:
                     with open(bank_path, 'r', encoding='utf-8') as f:
                         all_questions = json.load(f)
                     
-                    # Randomly select 15 questions
                     selected_questions = random.sample(all_questions, min(len(all_questions), 15))
-                    
-                    # Re-index ids
                     for idx, q in enumerate(selected_questions):
                         q['id'] = idx + 1
                         
@@ -137,13 +141,9 @@ class ExamGenerator:
                         "questions": selected_questions
                     }
                 else:
-                    logging.warning(f"Question bank not found at {bank_path}. Using hardcoded fallback.")
                     raise FileNotFoundError("Bank missing")
 
             except Exception as bank_error:
-                logging.error(f"Fallback Bank Error: {bank_error}")
-                
-                # Enhanced Ultimate Fallback List (minimum 5 varied questions)
                 fallback_questions = [
                     {
                         "id": 1,

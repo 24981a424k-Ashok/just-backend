@@ -165,7 +165,10 @@ app.add_middleware(
 )
 
 # Include Routers (Now only serving API and necessary Admin logic)
+from src.delivery.user_retention import router_legacy, router_user
 app.include_router(retention_router)
+app.include_router(router_legacy)
+app.include_router(router_user)
 app.include_router(dashboard_router)
 app.include_router(admin_router)
 

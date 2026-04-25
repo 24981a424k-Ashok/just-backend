@@ -2357,54 +2357,39 @@ async def get_live_cricket():
         soup = BeautifulSoup(resp.text, 'html.parser')
         matches_html = soup.find_all('div', class_='cb-mtch-lst')
         
-        live_matches = []
+        all_matches = []
         for match in matches_html:
-            # Check if live
             header = match.find('h3', class_='cb-lv-scr-mtch-hdr')
             if not header: continue
             
             title = header.text.strip()
-            # Filter for India matches or high profile leagues (IPL, WPL)
-            is_india = any(kw in title.lower() for kw in ["india", "ind ", " ind", "ipl", "wpl", "mumbai", "chennai", "delhi", "bangalore", "kolkata", "rajasthan", "punjab", "gujarat", "lucknow", "hyderabad", "rcb", "csk", "mi", "kkr", "dc", "pbks", "gt", "lsg", "srh"])
+            # Priority for India / IPL
+            is_india = any(kw in title.lower() for kw in ["india", "ind ", " ind", "ipl", "wpl", "mumbai", "chennai", "delhi", "bangalore", "kolkata", "rajasthan", "punjab", "gujarat", "lucknow", "hyderabad"])
             
-            status_div = match.find('div', class_='cb-text-live')
+            status_div = match.find('div', class_='cb-text-live') or match.find('div', class_='cb-text-complete') or match.find('div', class_='cb-text-preview')
             if not status_div: continue
             
-            score_div = match.find('div', class_='cb-scr-wgt-cont')
-            short_score = score_div.text.strip() if score_div else "Live Tracking..."
+            score_div = match.find('div', class_='cb-scr-wgt-cont') or match.find('div', class_='cb-scr-wkt-line')
+            short_score = score_div.text.strip() if score_div else "Scheduled / Tracking..."
             
-            live_matches.append({
+            all_matches.append({
                 "name": title,
                 "short_score": short_score,
                 "status": status_div.text.strip(),
-                "priority": 1 if is_india else 0
+                "is_india": is_india,
+                "is_live": "live" in status_div.get('class', []) or "live" in status_div.text.lower()
             })
 
-        if not live_matches:
-            # Try to find recent completions if no live matches
-            for match in matches_html:
-                complete_div = match.find('div', class_='cb-text-complete')
-                if complete_div:
-                    header = match.find('h3', class_='cb-lv-scr-mtch-hdr')
-                    score_div = match.find('div', class_='cb-scr-wkt-line')
-                    live_matches.append({
-                        "name": header.text.strip() if header else "Completed Match",
-                        "short_score": score_div.text.strip() if score_div else "Finished",
-                        "status": complete_div.text.strip(),
-                        "is_india": any(kw in (header.text.lower() if header else "") for kw in ["india", "ipl", "wpl"])
-                    })
-                    if len(live_matches) >= 3: break # Don't flood with old matches
-
-        if live_matches:
-            # Sort: India matches first
-            live_matches.sort(key=lambda x: x["is_india"], reverse=True)
+        if all_matches:
+            # Sort: Live first, then India matches
+            all_matches.sort(key=lambda x: (x["is_live"], x["is_india"]), reverse=True)
             return {
-                "live": True,
-                "matches": live_matches,
-                "count": len(live_matches)
+                "live": any(m["is_live"] for m in all_matches),
+                "matches": all_matches,
+                "count": len(all_matches)
             }
         
-        return {"live": False, "message": "No live cricket matches found at the moment."}
+        return {"live": False, "message": "No active cricket matches found."}
 
     except Exception as e:
         logger.error(f"Cricket Scraper Failed: {e}")
